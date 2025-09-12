@@ -1,42 +1,25 @@
-import React, { useState } from 'react';
-import { Shield, Smartphone, Brain, MapPin, Radio, Globe, AlertTriangle, Users, CheckCircle, ArrowRight, Play } from 'lucide-react';
+
+
+import React, { useState } from "react";
+import { 
+  Shield, Smartphone, Brain, MapPin, Radio, Globe, AlertTriangle, Users, CheckCircle, ArrowRight 
+} from "lucide-react";
+import { useUser } from "../UserContext"; // ✅ import context
 
 const LandingPage = ({ onNavigate, onLogin }) => {
   const [loginType, setLoginType] = useState('');
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [credentials, setCredentials] = useState({ username: '', password: '' });
 
+  const { users } = useUser(); // ✅ get users array from context
+
   const features = [
-    {
-      icon: Shield,
-      title: 'Digital Tourist ID',
-      description: 'Blockchain-based secure digital identity generation at entry points with KYC verification.'
-    },
-    {
-      icon: Smartphone,
-      title: 'Mobile Safety App',
-      description: 'Real-time safety scoring, geo-fencing alerts, and panic button with live location sharing.'
-    },
-    {
-      icon: Brain,
-      title: 'AI Anomaly Detection',
-      description: 'Smart detection of unusual patterns, route deviations, and potential distress situations.'
-    },
-    {
-      icon: MapPin,
-      title: 'Real-time Monitoring',
-      description: 'Live dashboards with tourist heat maps, risk zone visualization, and location tracking.'
-    },
-    {
-      icon: Radio,
-      title: 'IoT Integration',
-      description: 'Smart wearable devices for continuous health monitoring and emergency SOS features.'
-    },
-    {
-      icon: Globe,
-      title: 'Multilingual Support',
-      description: 'Available in 10+ Indian languages with voice emergency access for all users.'
-    }
+    { icon: Shield, title: 'Digital Tourist ID', description: 'Blockchain-based secure digital identity generation at entry points with KYC verification.' },
+    { icon: Smartphone, title: 'Mobile Safety App', description: 'Real-time safety scoring, geo-fencing alerts, and panic button with live location sharing.' },
+    { icon: Brain, title: 'AI Anomaly Detection', description: 'Smart detection of unusual patterns, route deviations, and potential distress situations.' },
+    { icon: MapPin, title: 'Real-time Monitoring', description: 'Live dashboards with tourist heat maps, risk zone visualization, and location tracking.' },
+    { icon: Radio, title: 'IoT Integration', description: 'Smart wearable devices for continuous health monitoring and emergency SOS features.' },
+    { icon: Globe, title: 'Multilingual Support', description: 'Available in 10+ Indian languages with voice emergency access for all users.' }
   ];
 
   const stats = [
@@ -46,28 +29,36 @@ const LandingPage = ({ onNavigate, onLogin }) => {
     { number: '7', label: 'Northeast States', icon: MapPin }
   ];
 
+  // ✅ Updated login logic to use context
   const handleLogin = (e) => {
-   e.preventDefault();
-   const foundUser = users.find(
-     (u) => u.email === credentials.username && u.phone === credentials.password
-   );
+    e.preventDefault();
 
-   if (foundUser) {
-     onLogin(foundUser);
-   } else if (
-     credentials.username === "authority" &&
-     credentials.password === "demo"
-   ) {
-     onLogin({
-       name: "Officer Singh",
-       type: "authority",
-       department: "Northeast Tourism Safety",
-       badge: "TSO-1001",
-     });
-   } else {
-     alert("Invalid credentials. Try registered email/phone or authority/demo");
-   }
- };
+    if (loginType === "tourist") {
+      const foundUser = users.find(
+        (u) => u.email === credentials.username && u.phone === credentials.password
+      );
+
+      if (foundUser) {
+        onLogin(foundUser);
+      } else {
+        alert("Invalid credentials. Use registered email & phone.");
+      }
+    } else if (loginType === "authority") {
+      // Hardcoded authority login
+      if (credentials.username === "authority" && credentials.password === "demo") {
+        onLogin({
+          name: "Officer Singh",
+          type: "authority",
+          department: "Northeast Tourism Safety",
+          badge: "TSO-1001",
+        });
+      } else {
+        alert("Invalid authority credentials (username: authority, password: demo).");
+      }
+    } else {
+      alert("Select login type first!");
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -121,14 +112,14 @@ const LandingPage = ({ onNavigate, onLogin }) => {
                         required
                       >
                         <option value="">Select Login Type</option>
-                        <option className='text-yellow-500' value="tourist">Tourist Dashboard</option>
-                        <option className='text-yellow-500' value="authority">Authority Dashboard</option>
+                        <option className='text-blue-600' value="tourist">Tourist</option>
+                        <option className='text-blue-600' value="authority">Authority</option>
                       </select>
                     </div>
                     <div>
                       <input
                         type="text"
-                        placeholder="Username"
+                        placeholder="Email"
                         value={credentials.username}
                         onChange={(e) => setCredentials({...credentials, username: e.target.value})}
                         className="w-full px-4 py-2 bg-white/20 text-white placeholder-blue-200 rounded-lg border border-white/30 focus:ring-2 focus:ring-blue-300"
@@ -138,7 +129,7 @@ const LandingPage = ({ onNavigate, onLogin }) => {
                     <div>
                       <input
                         type="password"
-                        placeholder="Password"
+                        placeholder="Phone Number"
                         value={credentials.password}
                         onChange={(e) => setCredentials({...credentials, password: e.target.value})}
                         className="w-full px-4 py-2 bg-white/20 text-white placeholder-blue-200 rounded-lg border border-white/30 focus:ring-2 focus:ring-blue-300"
@@ -152,9 +143,6 @@ const LandingPage = ({ onNavigate, onLogin }) => {
                       Login
                     </button>
                   </form>
-                  <p className="text-xs text-blue-200 mt-2">
-                    
-                  </p>
                 </div>
               )}
             </div>
@@ -179,7 +167,7 @@ const LandingPage = ({ onNavigate, onLogin }) => {
         </div>
       </div>
 
-      {/* Features Section */}
+            {/* Features Section */}
       <div className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">

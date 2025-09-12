@@ -1,76 +1,72 @@
-import React, { useState } from 'react';
-import { Shield, Upload, Calendar, MapPin, Phone, Mail, User, FileText, Check } from 'lucide-react';
+import React, { useState } from "react";
+import { Shield, Upload, Calendar, MapPin, Phone, Mail, User, Check } from "lucide-react";
+import { useUser } from "../UserContext"; // ✅ import context
 
 const Registration = ({ onNavigate }) => {
+  const { addUser } = useUser(); // ✅ get addUser from context
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Personal Information
-    fullName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    nationality: 'Indian',
-    
-    // KYC Documents
-    documentType: 'aadhaar',
-    documentNumber: '',
+    fullName: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+    nationality: "Indian",
+    documentType: "aadhaar",
+    documentNumber: "",
     documentFile: null,
-    
-    // Travel Details
-    arrivalDate: '',
-    departureDate: '',
-    entryPoint: '',
-    accommodation: '',
-    plannedDestinations: '',
-    
-    // Emergency Contacts
-    emergencyName: '',
-    emergencyPhone: '',
-    emergencyRelation: '',
-    
-    // Preferences
+    arrivalDate: "",
+    departureDate: "",
+    entryPoint: "",
+    accommodation: "",
+    plannedDestinations: [],
+    emergencyName: "",
+    emergencyPhone: "",
+    emergencyRelation: "",
     trackingConsent: false,
-    notificationPrefs: 'all'
+    notificationPrefs: "all",
   });
 
   const entryPoints = [
-    'Lokpriya Gopinath Bordoloi International Airport (Guwahati)',
-    'Dimapur Airport',
-    'Silchar Airport',
-    'Agartala Airport',
-    'Imphal Airport',
-    'Dawki Border (Meghalaya-Bangladesh)',
-    'Moreh Border (Manipur-Myanmar)',
-    'Road Entry via Siliguri'
+    "Lokpriya Gopinath Bordoloi International Airport (Guwahati)",
+    "Dimapur Airport",
+    "Silchar Airport",
+    "Agartala Airport",
+    "Imphal Airport",
+    "Dawki Border (Meghalaya-Bangladesh)",
+    "Moreh Border (Manipur-Myanmar)",
+    "Road Entry via Siliguri",
   ];
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        documentFile: file
+        documentFile: file,
       }));
     }
   };
 
+  // ✅ Updated handleSubmit to use context
   const handleSubmit = (e) => {
-   e.preventDefault();
-   const newUser = {
-     ...formData,
-     id: `TID-${Date.now()}`, // simple ID
-     type: "tourist"
-   };
-   alert("Digital Tourist ID Generated Successfully!");
-   onRegister(newUser); // send data to App
- };
+    e.preventDefault();
+    const newUser = {
+      ...formData,
+      id: `TID-${Date.now()}`, // simple unique ID
+      type: "tourist",
+    };
+    addUser(newUser); // ✅ store in context
+    alert("Digital Tourist ID Generated Successfully!");
+    onNavigate("landing"); // go back to landing page after registration
+  };
 
   const nextStep = () => {
     if (step < 4) setStep(step + 1);
@@ -83,13 +79,17 @@ const Registration = ({ onNavigate }) => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        {/* Header and Progress Bar (same as before) */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <Shield className="h-12 w-12 text-blue-600 mr-4" />
-            <h1 className="text-3xl font-bold text-gray-900">Digital Tourist ID Registration</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Digital Tourist ID Registration
+            </h1>
           </div>
-          <p className="text-gray-600">Secure, blockchain-based identity for safe tourism in Northeast India</p>
+          <p className="text-gray-600">
+            Secure, blockchain-based identity for safe tourism in Northeast India
+          </p>
         </div>
 
         {/* Progress Bar */}
@@ -97,17 +97,19 @@ const Registration = ({ onNavigate }) => {
           <div className="flex items-center justify-center space-x-4">
             {[1, 2, 3, 4].map((stepNum) => (
               <div key={stepNum} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                  step >= stepNum
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-300 text-gray-600'
-                }`}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                    step >= stepNum ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-600"
+                  }`}
+                >
                   {step > stepNum ? <Check className="h-5 w-5" /> : stepNum}
                 </div>
                 {stepNum < 4 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    step > stepNum ? 'bg-blue-600' : 'bg-gray-300'
-                  }`} />
+                  <div
+                    className={`w-16 h-1 mx-2 ${
+                      step > stepNum ? "bg-blue-600" : "bg-gray-300"
+                    }`}
+                  />
                 )}
               </div>
             ))}
@@ -121,12 +123,15 @@ const Registration = ({ onNavigate }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
-          {/* Step 1: Personal Information */}
+                   {/* Step 1: Personal Information */}
           {step === 1 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Personal Information</h2>
-              
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                Personal Information
+              </h2>
+
               <div className="grid md:grid-cols-2 gap-6">
+                {/* Full Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <User className="h-4 w-4 inline mr-2" />
@@ -135,12 +140,15 @@ const Registration = ({ onNavigate }) => {
                   <input
                     type="text"
                     value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("fullName", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
-                
+
+                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Mail className="h-4 w-4 inline mr-2" />
@@ -149,12 +157,15 @@ const Registration = ({ onNavigate }) => {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("email", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
-                
+
+                {/* Phone */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Phone className="h-4 w-4 inline mr-2" />
@@ -163,12 +174,15 @@ const Registration = ({ onNavigate }) => {
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("phone", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
-                
+
+                {/* DOB */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="h-4 w-4 inline mr-2" />
@@ -177,17 +191,24 @@ const Registration = ({ onNavigate }) => {
                   <input
                     type="date"
                     value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("dateOfBirth", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
-                
+
+                {/* Nationality */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nationality
+                  </label>
                   <select
                     value={formData.nationality}
-                    onChange={(e) => handleInputChange('nationality', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("nationality", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="Indian">Indian</option>
@@ -201,14 +222,21 @@ const Registration = ({ onNavigate }) => {
           {/* Step 2: KYC Documents */}
           {step === 2 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">KYC Documents</h2>
-              
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                KYC Documents
+              </h2>
+
               <div className="space-y-6">
+                {/* Document Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Document Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Document Type
+                  </label>
                   <select
                     value={formData.documentType}
-                    onChange={(e) => handleInputChange('documentType', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("documentType", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="aadhaar">Aadhaar Card</option>
@@ -217,19 +245,25 @@ const Registration = ({ onNavigate }) => {
                     <option value="driving">Driving License</option>
                   </select>
                 </div>
-                
+
+                {/* Document Number */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Document Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Document Number
+                  </label>
                   <input
                     type="text"
                     value={formData.documentNumber}
-                    onChange={(e) => handleInputChange('documentNumber', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("documentNumber", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter document number"
                     required
                   />
                 </div>
-                
+
+                {/* Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Upload className="h-4 w-4 inline mr-2" />
@@ -249,7 +283,9 @@ const Registration = ({ onNavigate }) => {
                     >
                       <Upload className="h-12 w-12 text-gray-400 mb-4" />
                       <span className="text-gray-600">
-                        {formData.documentFile ? formData.documentFile.name : 'Click to upload document'}
+                        {formData.documentFile
+                          ? formData.documentFile.name
+                          : "Click to upload document"}
                       </span>
                     </label>
                   </div>
@@ -261,9 +297,12 @@ const Registration = ({ onNavigate }) => {
           {/* Step 3: Travel Details */}
           {step === 3 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Travel Details</h2>
-              
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                Travel Details
+              </h2>
+
               <div className="grid md:grid-cols-2 gap-6">
+                {/* Arrival Date */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="h-4 w-4 inline mr-2" />
@@ -272,12 +311,15 @@ const Registration = ({ onNavigate }) => {
                   <input
                     type="date"
                     value={formData.arrivalDate}
-                    onChange={(e) => handleInputChange('arrivalDate', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("arrivalDate", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
-                
+
+                {/* Departure Date */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="h-4 w-4 inline mr-2" />
@@ -286,12 +328,15 @@ const Registration = ({ onNavigate }) => {
                   <input
                     type="date"
                     value={formData.departureDate}
-                    onChange={(e) => handleInputChange('departureDate', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("departureDate", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
-                
+
+                {/* Entry Point */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <MapPin className="h-4 w-4 inline mr-2" />
@@ -299,83 +344,215 @@ const Registration = ({ onNavigate }) => {
                   </label>
                   <select
                     value={formData.entryPoint}
-                    onChange={(e) => handleInputChange('entryPoint', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("entryPoint", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     <option value="">Select Entry Point</option>
-                    {entryPoints.map(point => (
-                      <option key={point} value={point}>{point}</option>
+                    {entryPoints.map((point) => (
+                      <option key={point} value={point}>
+                        {point}
+                      </option>
                     ))}
                   </select>
                 </div>
-                
+
+                {/* Accommodation */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Accommodation Details</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Accommodation Details
+                  </label>
                   <input
                     type="text"
                     value={formData.accommodation}
-                    onChange={(e) => handleInputChange('accommodation', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("accommodation", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Hotel/Guest House name and address"
                     required
                   />
                 </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Planned Destinations</label>
-                  <textarea
-                    value={formData.plannedDestinations}
-                    onChange={(e) => handleInputChange('plannedDestinations', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="3"
-                    placeholder="List the places you plan to visit"
-                    required
-                  />
-                </div>
-              </div>
 
-              {/* Emergency Contact */}
-              <div className="bg-red-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-red-900 mb-4">Emergency Contact</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                {/* Planned Destinations */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Planned Destinations
+                  </label>
+
+                  {formData.plannedDestinations.length > 0 ? (
+                    formData.plannedDestinations.map((dest, index) => (
+                      <div
+                        key={index}
+                        className="border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50"
+                      >
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {/* City */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              City
+                            </label>
+                            <input
+                              type="text"
+                              value={dest.city}
+                              onChange={(e) => {
+                                const newDests = [
+                                  ...formData.plannedDestinations,
+                                ];
+                                newDests[index].city = e.target.value;
+                                handleInputChange("plannedDestinations", newDests);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              placeholder="Eg. Mumbai"
+                              required
+                            />
+                          </div>
+
+                          {/* Location */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Location
+                            </label>
+                            <input
+                              type="text"
+                              value={dest.location}
+                              onChange={(e) => {
+                                const newDests = [
+                                  ...formData.plannedDestinations,
+                                ];
+                                newDests[index].location = e.target.value;
+                                handleInputChange("plannedDestinations", newDests);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              placeholder="Eg. Gate Of India"
+                              required
+                            />
+                          </div>
+
+                          {/* Location Type */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Location Type
+                            </label>
+                            <input
+                              type="text"
+                              value={dest.type}
+                              onChange={(e) => {
+                                const newDests = [
+                                  ...formData.plannedDestinations,
+                                ];
+                                newDests[index].type = e.target.value;
+                                handleInputChange("plannedDestinations", newDests);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              placeholder="Eg. Heritage Site"
+                              required
+                            />
+                          </div>
+
+                          {/* Time of Visit */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Time of Visit
+                            </label>
+                            <select
+                              value={dest.time}
+                              onChange={(e) => {
+                                const newDests = [
+                                  ...formData.plannedDestinations,
+                                ];
+                                newDests[index].time = e.target.value;
+                                handleInputChange("plannedDestinations", newDests);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              required
+                            >
+                              <option value="">Select</option>
+                              <option value="morning">Morning</option>
+                              <option value="afternoon">Afternoon</option>
+                              <option value="evening">Evening</option>
+                              <option value="night">Night</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Remove Button */}
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newDests =
+                                formData.plannedDestinations.filter(
+                                  (_, i) => i !== index
+                                );
+                              handleInputChange("plannedDestinations", newDests);
+                            }}
+                            className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm mb-2">
+                      No destinations added yet.
+                    </p>
+                  )}
+
+                  {/* Add Destination Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleInputChange("plannedDestinations", [
+                        ...formData.plannedDestinations,
+                        { city: "", location: "", type: "", time: "" },
+                      ]);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                  >
+                    + Add Destination
+                  </button>
+                </div>
+
+                {/* Emergency Contact */}
+                <div className="md:col-span-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Emergency Contact
+                  </h3>
+                  <div className="grid md:grid-cols-3 gap-4">
                     <input
                       type="text"
                       value={formData.emergencyName}
-                      onChange={(e) => handleInputChange('emergencyName', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      onChange={(e) =>
+                        handleInputChange("emergencyName", e.target.value)
+                      }
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Name"
                       required
                     />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
                     <input
                       type="tel"
                       value={formData.emergencyPhone}
-                      onChange={(e) => handleInputChange('emergencyPhone', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      onChange={(e) =>
+                        handleInputChange("emergencyPhone", e.target.value)
+                      }
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Phone"
                       required
                     />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Relationship</label>
-                    <select
+                    <input
+                      type="text"
                       value={formData.emergencyRelation}
-                      onChange={(e) => handleInputChange('emergencyRelation', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      onChange={(e) =>
+                        handleInputChange("emergencyRelation", e.target.value)
+                      }
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Relation"
                       required
-                    >
-                      <option value="">Select</option>
-                      <option value="parent">Parent</option>
-                      <option value="spouse">Spouse</option>
-                      <option value="sibling">Sibling</option>
-                      <option value="friend">Friend</option>
-                      <option value="other">Other</option>
-                    </select>
+                    />
                   </div>
                 </div>
               </div>
@@ -384,72 +561,40 @@ const Registration = ({ onNavigate }) => {
 
           {/* Step 4: Completion */}
           {step === 4 && (
-            <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                <Check className="h-10 w-10 text-green-600" />
-              </div>
-              
-              <h2 className="text-2xl font-semibold text-gray-900">Registration Complete!</h2>
-              
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-900 mb-4">Your Digital Tourist ID</h3>
-                <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
-                  <div className="text-2xl font-mono text-blue-600 mb-2">TID-2024-{Math.random().toString(36).substr(2, 6).toUpperCase()}</div>
-                  <p className="text-sm text-gray-600">Blockchain verified • Valid until {formData.departureDate}</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="tracking-consent"
-                    checked={formData.trackingConsent}
-                    onChange={(e) => handleInputChange('trackingConsent', e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor="tracking-consent" className="text-sm text-gray-700">
-                    I consent to location tracking for safety purposes (Optional)
-                  </label>
-                </div>
-                
-                <p className="text-xs text-gray-500 max-w-2xl mx-auto">
-                  Your data is secured with end-to-end encryption and blockchain technology. 
-                  We comply with all data protection regulations and your privacy is our priority.
-                </p>
-              </div>
+            <div className="space-y-6 text-center">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                Registration Complete
+              </h2>
+              <p className="text-gray-600">
+                Please review your information and click submit to generate your
+                Digital Tourist ID.
+              </p>
             </div>
           )}
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8">
-            <button
-              type="button"
-              onClick={prevStep}
-              disabled={step === 1}
-              className={`px-6 py-2 rounded-lg font-medium ${
-                step === 1
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gray-600 text-white hover:bg-gray-700'
-              } transition-colors`}
-            >
-              Previous
-            </button>
-            
+          <div className="mt-8 flex justify-between">
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Back
+              </button>
+            )}
             {step < 4 ? (
               <button
                 type="button"
                 onClick={nextStep}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
-                Next Step
+                Next
               </button>
             ) : (
               <button
                 type="submit"
-                className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                className="ml-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
-                Generate Digital ID
+                Submit & Generate ID
               </button>
             )}
           </div>
