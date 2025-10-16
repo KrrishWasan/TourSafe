@@ -48,7 +48,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Navigation
+      <Navigation
         currentPage={currentPage}
         onNavigate={handleNavigate}
         user={user}
@@ -57,9 +57,9 @@ function AppContent() {
           setCurrentPage("landing");
         }}
       />
-      {renderPage()} */}
-      <TouristDashboard />
-      <PlaceStats /> 
+      {renderPage()}
+      {/* <TouristDashboard />
+      <PlaceStats />  */}
     </div>
   );
 }

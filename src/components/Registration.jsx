@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Shield, Upload, Calendar, MapPin, Phone, Mail, User, Check } from "lucide-react";
 import { useUser } from "../UserContext"; // ✅ import context
 
@@ -75,6 +75,48 @@ const Registration = ({ onNavigate }) => {
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
   };
+
+  // Load Google Places Autocomplete dynamically
+useEffect(() => {
+  if (!window.google) {
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBIzyU04U5XEshHQRhLjJRmCj3XGhr9BV4&libraries=places`;
+    document.body.appendChild(script);
+  }
+}, []);
+
+// Fetch famous places using Google Places API Autocomplete
+const fetchFamousPlaces = (index, city) => {
+  if (!window.google || !city) return;
+
+  const input = document.getElementById(`location-input-${index}`);
+  const autocomplete = new window.google.maps.places.Autocomplete(input, {
+    types: ["tourist_attraction", "point_of_interest", "establishment"],
+    componentRestrictions: { country: "in" },
+  });
+
+  // Bias search results towards the selected city
+  const geocoder = new window.google.maps.Geocoder();
+  geocoder.geocode({ address: city }, (results, status) => {
+    if (status === "OK" && results[0]) {
+      const cityLocation = results[0].geometry.location;
+      autocomplete.setBounds(
+        new window.google.maps.LatLngBounds(cityLocation, cityLocation)
+      );
+    }
+  });
+
+  // Update location when user selects a place
+  autocomplete.addListener("place_changed", () => {
+    const place = autocomplete.getPlace();
+    if (place && place.name) {
+      const newDests = [...formData.plannedDestinations];
+      newDests[index].location = place.name;
+      handleInputChange("plannedDestinations", newDests);
+    }
+  });
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -377,145 +419,142 @@ const Registration = ({ onNavigate }) => {
                 </div>
 
                 {/* Planned Destinations */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Planned Destinations
-                  </label>
+<div className="md:col-span-2">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Planned Destinations
+  </label>
 
-                  {formData.plannedDestinations.length > 0 ? (
-                    formData.plannedDestinations.map((dest, index) => (
-                      <div
-                        key={index}
-                        className="border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50"
-                      >
-                        <div className="grid md:grid-cols-2 gap-4">
-                          {/* City */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              City
-                            </label>
-                            <input
-                              type="text"
-                              value={dest.city}
-                              onChange={(e) => {
-                                const newDests = [
-                                  ...formData.plannedDestinations,
-                                ];
-                                newDests[index].city = e.target.value;
-                                handleInputChange("plannedDestinations", newDests);
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Eg. Mumbai"
-                              required
-                            />
-                          </div>
+  {formData.plannedDestinations.length > 0 ? (
+    formData.plannedDestinations.map((dest, index) => (
+      <div
+        key={index}
+        className="border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50"
+      >
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* City */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              City
+            </label>
+            <input
+              type="text"
+              value={dest.city}
+              onChange={(e) => {
+                const newDests = [...formData.plannedDestinations];
+                newDests[index].city = e.target.value;
+                handleInputChange("plannedDestinations", newDests);
+              }}
+              onBlur={() => {
+                // Trigger auto-suggestions for famous locations
+                fetchFamousPlaces(index, dest.city);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Eg. Mumbai"
+              required
+            />
+          </div>
 
-                          {/* Location */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Location
-                            </label>
-                            <input
-                              type="text"
-                              value={dest.location}
-                              onChange={(e) => {
-                                const newDests = [
-                                  ...formData.plannedDestinations,
-                                ];
-                                newDests[index].location = e.target.value;
-                                handleInputChange("plannedDestinations", newDests);
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Eg. Gate Of India"
-                              required
-                            />
-                          </div>
+          {/* Location with auto-suggest */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Location
+            </label>
 
-                          {/* Location Type */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Location Type
-                            </label>
-                            <input
-                              type="text"
-                              value={dest.type}
-                              onChange={(e) => {
-                                const newDests = [
-                                  ...formData.plannedDestinations,
-                                ];
-                                newDests[index].type = e.target.value;
-                                handleInputChange("plannedDestinations", newDests);
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Eg. Heritage Site"
-                              required
-                            />
-                          </div>
+            <input
+              id={`location-input-${index}`}
+              type="text"
+              value={dest.location}
+              onChange={(e) => {
+                const newDests = [...formData.plannedDestinations];
+                newDests[index].location = e.target.value;
+                handleInputChange("plannedDestinations", newDests);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Eg. Gateway of India"
+              required
+            />
+          </div>
 
-                          {/* Time of Visit */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Time of Visit
-                            </label>
-                            <select
-                              value={dest.time}
-                              onChange={(e) => {
-                                const newDests = [
-                                  ...formData.plannedDestinations,
-                                ];
-                                newDests[index].time = e.target.value;
-                                handleInputChange("plannedDestinations", newDests);
-                              }}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                              required
-                            >
-                              <option value="">Select</option>
-                              <option value="morning">Morning</option>
-                              <option value="afternoon">Afternoon</option>
-                              <option value="evening">Evening</option>
-                              <option value="night">Night</option>
-                            </select>
-                          </div>
-                        </div>
+          {/* Location Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Location Type
+            </label>
+            <input
+              type="text"
+              value={dest.type}
+              onChange={(e) => {
+                const newDests = [...formData.plannedDestinations];
+                newDests[index].type = e.target.value;
+                handleInputChange("plannedDestinations", newDests);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Eg. Heritage Site"
+              required
+            />
+          </div>
 
-                        {/* Remove Button */}
-                        <div className="mt-3 flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newDests =
-                                formData.plannedDestinations.filter(
-                                  (_, i) => i !== index
-                                );
-                              handleInputChange("plannedDestinations", newDests);
-                            }}
-                            className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm mb-2">
-                      No destinations added yet.
-                    </p>
-                  )}
+          {/* Time of Visit */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Time of Visit
+            </label>
+            <select
+              value={dest.time}
+              onChange={(e) => {
+                const newDests = [...formData.plannedDestinations];
+                newDests[index].time = e.target.value;
+                handleInputChange("plannedDestinations", newDests);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select</option>
+              <option value="morning">Morning</option>
+              <option value="afternoon">Afternoon</option>
+              <option value="evening">Evening</option>
+              <option value="night">Night</option>
+            </select>
+          </div>
+        </div>
 
-                  {/* Add Destination Button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleInputChange("plannedDestinations", [
-                        ...formData.plannedDestinations,
-                        { city: "", location: "", type: "", time: "" },
-                      ]);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
-                  >
-                    + Add Destination
-                  </button>
-                </div>
+        {/* Remove Button */}
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              const newDests = formData.plannedDestinations.filter(
+                (_, i) => i !== index
+              );
+              handleInputChange("plannedDestinations", newDests);
+            }}
+            className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+    ))
+  ) : (
+    <p className="text-gray-500 text-sm mb-2">
+      No destinations added yet.
+    </p>
+  )}
+
+  {/* Add Destination Button */}
+  <button
+    type="button"
+    onClick={() => {
+      handleInputChange("plannedDestinations", [
+        ...formData.plannedDestinations,
+        { city: "", location: "", type: "", time: "" },
+      ]);
+    }}
+    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+  >
+    + Add Destination
+  </button>
+</div>
 
                 {/* Emergency Contact */}
                 <div className="md:col-span-2">
